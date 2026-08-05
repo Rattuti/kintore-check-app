@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>筋トレチェック</title>
+<style>
+  :root {
+    --bg: #f5f3ef;
+    --panel: #ffffff;
+    --border: #e6ddd2;
+    --text: #2a2420;
+    --muted: #7a7167;
+    --accent: #c1502e;
+    --accent-dark: #9c3f22;
+    --clear: #4f8f6a;
+    --miss: #b3546b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Yu Gothic", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+  }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  .subtitle { color: var(--muted); margin: 0 0 12px; font-size: 0.9rem; }
+  .layout { display: grid; grid-template-columns: 1fr; gap: 16px; max-width: 880px; margin: 0 auto; }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .panel h2 { font-size: 1rem; margin: 0 0 4px; }
+  .panel .desc { font-size: 0.82rem; color: var(--muted); margin: 0 0 14px; }
+  .hint { font-size: 0.8rem; color: var(--muted); margin-top: 8px; }
+  .hint.sync-error { color: var(--miss); }
+
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  select, input[type=text], input[type=number], input[type=date], button {
+    font: inherit;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--text);
+  }
+  button { cursor: pointer; background: var(--accent); color: #fff; border: none; }
+  button:hover { background: var(--accent-dark); }
+  button.secondary { background: #fff; color: var(--text); border: 1px solid var(--border); }
+  button.secondary:hover { background: var(--bg); }
+  button.rm-btn { background: none; border: none; color: var(--muted); padding: 2px 6px; font-size: 0.85rem; }
+  button.rm-btn:hover { color: var(--miss); background: none; }
+
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 10px; }
+  .form-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; color: var(--muted); }
+  .form-grid select, .form-grid input { width: 100%; }
+
+  .tips-category {
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 14px; margin-bottom: 8px; background: var(--bg);
+  }
+  .tips-category:last-child { margin-bottom: 0; }
+  .tips-category summary { cursor: pointer; font-weight: 600; font-size: 0.92rem; color: var(--accent-dark); }
+  .tips-category summary:hover { color: var(--accent); }
+  .tips-category[open] summary { margin-bottom: 4px; }
+  .tips-list { margin: 8px 0 0; padding-left: 20px; font-size: 0.85rem; line-height: 1.55; }
+  .tips-list li { margin-bottom: 6px; }
+  .tips-list .tips-list { margin-top: 6px; font-size: 0.82rem; color: var(--muted); }
+
+  .chip-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg); border-radius: 999px; padding: 4px 6px 4px 12px; font-size: 0.85rem;
+    border-left: 4px solid var(--muted);
+  }
+  .chip .rm { background: none; border: none; color: var(--muted); cursor: pointer; padding: 2px 6px; border-radius: 50%; font-size: 0.8rem; }
+  .chip .rm:hover { color: var(--miss); }
+  .empty { color: var(--muted); text-align: center; padding: 20px 0; font-size: 0.88rem; }
+
+  .set-rows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+  .set-row { display: flex; gap: 8px; align-items: center; }
+  .set-row .set-index { width: 22px; flex-shrink: 0; color: var(--muted); font-size: 0.82rem; }
+  .set-row input { width: 90px; }
+  .set-row .unit { font-size: 0.8rem; color: var(--muted); }
+
+  .date-group { margin-bottom: 18px; }
+  .date-group:last-child { margin-bottom: 0; }
+  .date-heading {
+    font-size: 0.88rem; font-weight: 700; color: var(--accent-dark);
+    border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-bottom: 8px;
+  }
+  .log-card {
+    border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px;
+    margin-bottom: 8px; background: var(--bg);
+  }
+  .log-card:last-child { margin-bottom: 0; }
+  .log-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .log-card-head .ex-name { font-weight: 600; font-size: 0.95rem; }
+  .set-summary { font-size: 0.85rem; color: var(--text); margin-top: 4px; line-height: 1.6; }
+  .set-summary .set-pill {
+    display: inline-block; background: #fff; border: 1px solid var(--border);
+    border-radius: 6px; padding: 2px 8px; margin: 2px 4px 2px 0; font-size: 0.82rem;
+  }
+  .volume { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+  .log-note { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+
+  @media (max-width: 600px) {
+    body { padding: 14px; }
+    .set-row input { width: 100%; }
+    button { min-height: 40px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <div>
+    <h1>筋トレチェック</h1>
+    <p class="subtitle">種目ごとにセット・回数・重量を記録します。</p>
+    <p class="hint" id="syncStatus" style="margin-top:0;"></p>
+  </div>
+
+  <div class="panel">
+    <h2>豆知識(パレオな男まとめ)</h2>
+    <p class="desc">「パレオな男」を参考に整理した学習メモです。項目をクリックすると展開します。記録の判定などには使われず、読み物としてこのページに置いているだけです。効果には個人差があります。</p>
+
+    <details class="tips-category">
+      <summary>筋トレや運動の休憩</summary>
+      <ul class="tips-list">
+        <li>筋肥大のための筋トレや運動のパフォーマンスを効果的に高める最適な休憩時間とは何分か？
+          <ul class="tips-list">
+            <li>セット間の休憩時間: 3分間の休憩が最も効率の良い筋トレができる。5分も休むと筋肉が冷えて休憩の意味がなくなる。1分の休憩だと筋力が疲れている状態で力が十分に入らず効果が下がる。2分くらいからが効果が出てくる最低ライン</li>
+            <li>筋トレの内容をスーパーセットにしてしまう(上半身と下半身のメニューを交互にこなすと時短)</li>
+          </ul>
+        </li>
+      </ul>
+    </details>
+
+    <details class="tips-category">
+      <summary>筋トレ効果を高める 正しい負荷や負荷の感覚</summary>
+      <ul class="tips-list">
+        <li>筋トレの負荷に対するツラさを測る方法は何という？
+          <ul class="tips-list">
+            <li>RPE(rate of perceived exertion): 筋トレのキツさを主観で計測する方法</li>
+            <li>RPE判断基準: 1〜4点=楽勝レベル(ほとんど努力不要) / 5〜6点=後4〜6回はできそう / 7点=後3回できると自信を持って言える / 7.5点=後2回できるが3回いけるかも / 8点=後2回できるかも / 8.5点=後1回できると自信を持てるが2回いけるかも / 9点=後1回できるかも / 9.5点=もう1回もできないがちょっとだけいけるかも / 10点=もう1回も絶対に無理</li>
+          </ul>
+        </li>
+        <li>1セットあたり6〜20回の範囲なら筋肥大の結果は同じ
+          <ul class="tips-list">
+            <li>1セットの回数が6〜20+の範囲でRPEが7より上であれば、筋肉の発達にそんな差が出ない</li>
+          </ul>
+        </li>
+        <li>ピリオダイゼーション
+          <ul class="tips-list">
+            <li>ピリオダイゼーションとは何か？
+              <ul class="tips-list">
+                <li>短い期間のなかで負荷やボリュームを変えるトレーニングで、筋サイズより筋力が上がりやすい</li>
+              </ul>
+            </li>
+            <li>ピリオダイゼーションを基にした筋トレ方法とは？
+              <ul class="tips-list">
+                <li>ベースの考え方: 1週目は1RMの70%で8回を5セット / 2週目は1RMの75%で5回を5セット / 3週目は1RMの80%で3回を5セット / 4週目は1週目より少し重い負荷で8回を5セット</li>
+                <li>デイリー・ピリオダイゼーション: 1週間の中で最大まで重さを上げたら月曜日からまた低負荷でやり直す。毎週月曜=1RMの60%をへとへとになるまで計5セット / 毎週水曜=1RMの75%を計4セット / 毎週金曜=1RMの90%を計3セット</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li>RMとは何か？
+          <ul class="tips-list">
+            <li>RM(repeating maximum): 1回の動きで上げられる限界の重量</li>
+          </ul>
+        </li>
+      </ul>
+    </details>
+
+    <details class="tips-category">
+      <summary>サプリメント</summary>
+      <ul class="tips-list">
+        <li>クレアチン
+          <ul class="tips-list">
+            <li>筋力を増やすために使用するクレアチンは、いつ取ると良いか？
+              <ul class="tips-list">
+                <li>クレアチンは筋トレ後のほうが結果が出やすい(トレーニング後に飲んだほうが筋肉量は増える。前:0.9kg増、後:2.0kg増。筋力もトレーニング後のほうが増える/ベンチプレス1RM)</li>
+                <li>トレーニング後はインスリン感受性が高まっていて、糖質と一緒にクレアチンを補給するタイミングとしてはありかも</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </details>
+
+    <details class="tips-category">
+      <summary>有酸素運動</summary>
+      <ul class="tips-list">
+        <li>1日あたり何分の有酸素運動が良いか？また、やりすぎるとどうなるか？
+          <ul class="tips-list">
+            <li>15分でOK。45分以上だとストレスホルモンが出すぎてしまう</li>
+            <li>運動をさぼると10日で悪くなる(脳の血流が下がり、能率が下がる)</li>
+          </ul>
+        </li>
+        <li>筋力を高める運動手順は？また、それはいつすれば良いか？
+          <ul class="tips-list">
+            <li>夕方に有酸素運動→筋トレの順で筋力が最大になる</li>
+          </ul>
+        </li>
+      </ul>
+    </details>
+
+    <details class="tips-category">
+      <summary>HIIT(High-intensity interval training)</summary>
+      <ul class="tips-list">
+        <li>HIIT(間欠的運動)とは、高強度(High Intensity)の運動を休憩を挟んで(Interval)行うトレーニング(Training)のこと
+          <ul class="tips-list">
+            <li>HIIT WB(自重トレーニング): 全力で4種目を4分間。1種目につき20秒(全力)⇔10秒(休憩)。1バービー 2マウンテンクライマー 3スクワットスラスト 4ジャンピングジャック。心肺機能が高まり、疲労でよく眠れる/連続して仕事しても疲れにくい</li>
+          </ul>
+        </li>
+        <li>ノルウェー式HIIT
+          <ul class="tips-list">
+            <li>メリットは？
+              <ul class="tips-list">
+                <li>細胞レベルで若返る。ミトコンドリアの性能が49%アップ(18〜30歳)、69%アップ(65〜80歳)。インスリン感受性も大きく改善。集中力や活力の向上にもつながる。週3回で細胞内の老化物質が処理され新しいタンパク質として生まれ変わる</li>
+              </ul>
+            </li>
+            <li>HIITが体を若々しく保ってくれる理由は？
+              <ul class="tips-list">
+                <li>老化の原因の一つは損傷したタンパク質が細胞内に残ること。HIITには細胞内の損傷タンパク質の蓄積を防ぐ効果がある</li>
+              </ul>
+            </li>
+            <li>やり方の手順は？
+              <ul class="tips-list">
+                <li>0. 5分間のウォーミングアップ(ランニングマシン・サイクリング・スクワットでもOK) → 1. 4分間全力運動(バービージャンプ、最大酸素摂取量85〜95%) → 2. 3分間の軽い運動(ジャンプ・歩く・軽いジョギング) → 1⇔2をセットで4回繰り返す → 最後に5分間のクールダウン</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </details>
+
+    <details class="tips-category">
+      <summary>リーンゲインズとは何か？</summary>
+      <ul class="tips-list">
+        <li>体内のミトコンドリアに活を入れる</li>
+        <li>1日のうち8時間は何でも食べて良く、残りの16時間は何も食べない</li>
+      </ul>
+    </details>
+
+    <details class="tips-category">
+      <summary>食事法</summary>
+      <ul class="tips-list">
+        <li>IPF(インターミッテント・パーシャル・ファスティング)
+          <ul class="tips-list">
+            <li>①週に3日だけ、1日の必要カロリー(TDEE)から30〜40%引いた食事をする ②プチ断食の日は最低でも体重1kgあたり1gのタンパク質を摂る</li>
+          </ul>
+        </li>
+        <li>朝起きたら、一番最初にカフェインとテアニン、チロシン、ロディオラを飲む(by DaiGo)</li>
+      </ul>
+    </details>
+
+    <details class="tips-category">
+      <summary>モテる体型</summary>
+      <ul class="tips-list">
+        <li>体脂肪
+          <ul class="tips-list">
+            <li>男性で腹筋が浮き彫りになる体脂肪率は何%か？また下がり過ぎるデメリットは？
+              <ul class="tips-list">
+                <li>男性8〜10%、10%前後で良い。※10%を切るとテストステロンが下がる</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li>体型
+          <ul class="tips-list">
+            <li>男性: 大胸筋がありお腹が引き締まっている</li>
+            <li>女性のバストの魅力: 大きさでなく、張りと丸み</li>
+          </ul>
+        </li>
+      </ul>
+    </details>
+
+    <details class="tips-category">
+      <summary>背筋</summary>
+      <ul class="tips-list">
+        <li>中部僧帽筋
+          <ul class="tips-list">
+            <li>筋肥大が効率的に狙える筋トレ方法トップ3: ①ベントオーバーロウ ②IYTレイズ ③インバーテッドロウ
+              <ul class="tips-list">
+                <li>ベントオーバーロウのやり方: 肩幅より少し狭めで立つ。スネは垂直に。バーは小指と薬指で握る(親指は添えるだけ)。背中はまっすぐ前傾(床に対して35〜45°)。広背筋なら足の付け根に、僧帽筋ならみぞおちにバーを引く。腕を伸ばしきらずに肘を持ち上げる意識で</li>
+              </ul>
+            </li>
+            <li>逆効果の筋トレ方法(中部僧帽筋への効果が低かったもの): 逆手の懸垂・順手の懸垂・ラットプルダウン</li>
+          </ul>
+        </li>
+        <li>僧帽筋下部: ①IYTレイズ ②ベントオーバーロウ</li>
+        <li>広背筋: ①順手の懸垂 ②逆手の懸垂</li>
+        <li>棘下筋: ①IYTレイズ ②ベントオーバーロウ ③インバーテッドロウ</li>
+        <li>脊柱起立筋: ①ベントオーバーロウ</li>
+      </ul>
+    </details>
+
+    <details class="tips-category">
+      <summary>胸</summary>
+      <ul class="tips-list">
+        <li>筋肥大が効率的に狙える筋トレ方法トップ3: ①バーベルベンチプレス(平均EMG100) ②ペックデックマシン(平均EMG98) ③前傾ケーブルクロスオーバー</li>
+      </ul>
+    </details>
+
+    <details class="tips-category">
+      <summary>腕</summary>
+      <ul class="tips-list">
+        <li>力こぶ: ①コンセントレーションカール ②ケーブルカール ③チンアップ</li>
+        <li>二の腕(上腕三頭筋): ①トライアングルプッシュアップ ②キックバック ③ディップス ※ダンベル種目は1RMの70%負荷で行う</li>
+      </ul>
+    </details>
+
+    <details class="tips-category">
+      <summary>肩</summary>
+      <ul class="tips-list">
+        <li>三角筋前部: ①ダンベルショルダープレス ②ダンベルフロントレイズ</li>
+        <li>三角筋中部: ①45度インクラインロウ ②ベントアーム・ラテラルレイズ ③ケーブル・レイズ</li>
+        <li>三角筋後部: ①シーテッド・リア・ラテラルレイズ ②45度インクラインロウ</li>
+      </ul>
+    </details>
+
+    <details class="tips-category">
+      <summary>尻</summary>
+      <ul class="tips-list">
+        <li>大臀筋: ①クアッドプル・ヒップ・エクステンション ②フォーウェイ・ヒップ・エクステンション ③スクワット</li>
+        <li>中臀筋: ①クアッドプル・ヒップ・エクステンション ②ステップアップ ③ランジ</li>
+      </ul>
+    </details>
+
+    <details class="tips-category">
+      <summary>足</summary>
+      <ul class="tips-list">
+        <li>大腿二頭筋(ハムストリング・太ももの裏): ①ケトルベル・スイング ②プローン・レッグカール ③片足ルーマニアン・デッドリフト</li>
+        <li>半腱様筋(太ももの内側): ①リバース・ヒップレイズ ②バランスボール・ハムストリング・カール ③グルートハム・レイズ</li>
+        <li>大腿四頭筋(太ももの筋肉): ①スクワット(足は肩幅でヒザは90度曲げる) ②レッグ・エクステンション ③ハック・スクワット
+          <ul class="tips-list">
+            <li>スクワットのフォーム: 足裏の重心は足の真ん中。爪先は30〜40°程度に外向ける。膝を外に開いてしゃがむ。しゃがんでも背中・骨盤は真っ直ぐのまま。お尻を後ろに出してヒップドライブを使う</li>
+          </ul>
+        </li>
+        <li>下腿三頭筋(ふくらはぎ): ①ドンキー・カーフレイズ ②片足カーフレイズ ③両足カーフレイズ</li>
+      </ul>
+    </details>
+
+    <details class="tips-category">
+      <summary>腹筋</summary>
+      <ul class="tips-list">
+        <li>腹直筋上部(お腹の上): ①デクライン・ベンチ・カールアップ ②シットアップ ③バランスボール・クランチ ※普通にシットアップで良い</li>
+        <li>腹直筋下部(お腹の下): ①デクライン・ベンチ・カールアップ ②バランスボール・クランチ ③キャプテン・チェア・クランチ ④ボートポーズ ⑤バイシクル・クランチ ※ベンチが使えるなら①が圧倒的に効果高い、自宅で器具がなければ④⑤</li>
+        <li>外腹斜筋(脇腹): ①デクライン・ベンチ・カールアップ ②キャプテン・チェア・クランチ ③ボートポーズ</li>
+      </ul>
+    </details>
+
+    <details class="tips-category">
+      <summary>腕立て伏せ</summary>
+      <ul class="tips-list">
+        <li>肩甲骨はがし腕立て: 0.肩甲骨を動かし両手を真上に伸ばす/戻すを繰り返す 1.体を支えるのは小指側 2.胸と手は常に一直線上 3.正面から見て肘は45度方向に曲げる 4.横から見て肘は30度位だけ曲げる ※胸じゃなく脇に効いていればOK</li>
+      </ul>
+    </details>
+
+    <details class="tips-category">
+      <summary>スクワット</summary>
+      <ul class="tips-list">
+        <li>正しいフォームでスクワットを10回することで血行を正す(100回より10回のほうが効果が出る)</li>
+        <li>手順: 1.足を肩幅ほどに開く 2.爪先は少し外側に向ける 3.息をゆっくり吸い始める 4.お尻を突き出すことで自然と腰を曲げる 5.膝が約90度に曲がったらキープする 6.息を吐きながら膝を軽く曲げた状態まで立ち戻る 7.3に戻る</li>
+        <li>効果: インナーマッスルを鍛える/基礎代謝が上がる</li>
+      </ul>
+    </details>
+  </div>
+
+  <div class="panel">
+    <h2>種目マスタ</h2>
+    <p class="desc">よく使う種目を登録しておくと、記録の入力候補に出てきます。</p>
+    <div class="chip-list" id="exerciseMasterList" style="margin-bottom: 10px;"></div>
+    <div class="form-grid">
+      <label>種目名<input type="text" id="exerciseInput" placeholder="例: ベンチプレス"></label>
+      <label>部位<select id="exerciseCategory"></select></label>
+    </div>
+    <button type="button" class="secondary" id="addExerciseBtn">種目を追加</button>
+  </div>
+
+  <div class="panel">
+    <h2>記録を追加</h2>
+    <div class="form-grid">
+      <label>日付<input type="date" id="logDate"></label>
+      <label>種目名<input type="text" id="logExercise" list="exerciseDatalist" placeholder="種目マスタから選択 or 自由入力"></label>
+    </div>
+    <datalist id="exerciseDatalist"></datalist>
+
+    <div class="set-rows" id="setRows"></div>
+    <div class="row" style="margin-bottom: 10px;">
+      <button type="button" class="secondary" id="addSetRowBtn">+ セットを追加</button>
+    </div>
+
+    <div class="form-grid">
+      <label>メモ(任意)<input type="text" id="logNote" placeholder="任意"></label>
+    </div>
+    <button type="button" id="saveLogBtn">記録を保存</button>
+  </div>
+
+  <div class="panel">
+    <h2>記録一覧</h2>
+    <div id="logGroups"></div>
+    <div class="empty" id="logEmpty">まだ記録がありません</div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Notion sync ----------
+  var NOTION_ENABLED = !!(window.claude && window.claude.mcp);
+  var NOTION_SERVER = "Notion";
+  var DS = {
+    exercises: { id: "4dc2172d-a020-4575-be14-6aea99065a6d", view: "view://e24e6e12-95b0-47aa-910a-36368495c03b" },
+    logs: { id: "db740ee3-c0e0-4438-b703-088c04438af3", view: "view://c4271dcb-53e0-4272-9d10-90a5a1c30284" }
+  };
+
+  var CATEGORY_OPTIONS = ["胸", "背中", "脚", "肩", "腕", "腹", "その他"];
+  var CATEGORY_COLORS = {
+    "胸": "#c1502e", "背中": "#3b6ea5", "脚": "#4f8f6a",
+    "肩": "#c99a3f", "腕": "#8a5fbf", "腹": "#b3546b", "その他": "#7a7167"
+  };
+
+  function extractPageId(url) {
+    var m = /([0-9a-f]{32})(?:\?.*)?$/i.exec(url || "");
+    return m ? m[1] : null;
+  }
+
+  // セット詳細は「回数:重量」を「||」区切りで保存する(自重種目は重量を空にする)。
+  // JSON文字列をテキストプロパティに保存すると "[" "]" が配列風に誤認識され
+  // 消えてしまう不具合がkabu-researchアプリで確認済みのため、この形式を踏襲する。
+  function encodeSets(sets) {
+    return (sets || []).map(function (s) {
+      return s.reps + ":" + (s.weight != null ? s.weight : "");
+    }).join("||");
+  }
+  function decodeSets(str) {
+    if (!str) return [];
+    return str.split("||").filter(function (s) { return s; }).map(function (pair) {
+      var parts = pair.split(":");
+      var reps = parseInt(parts[0], 10);
+      var weight = parts[1] !== "" && parts[1] != null ? parseFloat(parts[1]) : null;
+      return { reps: isNaN(reps) ? 0 : reps, weight: (weight != null && !isNaN(weight)) ? weight : null };
+    });
+  }
+
+  function setSyncStatus(text, isError) {
+    var el = document.getElementById("syncStatus");
+    el.textContent = text;
+    el.className = "hint" + (isError ? " sync-error" : "");
+  }
+
+  function syncErrorMessage(prefix, err) {
+    return prefix + "の同期に失敗しました(" + (err && err.code) + ")";
+  }
+
+  function queryAllViewRows(viewUrl) {
+    function fetchPage(cursor) {
+      var input = { view_url: viewUrl, page_size: 100 };
+      if (cursor) input.start_cursor = cursor;
+      return window.claude.mcp.callTool(NOTION_SERVER, "notion-query-database-view", input).then(function (res) {
+        var payload = res.payload || {};
+        var rows = payload.results || [];
+        if (payload.has_more && payload.next_cursor) {
+          return fetchPage(payload.next_cursor).then(function (rest) { return rows.concat(rest); });
+        }
+        return rows;
+      });
+    }
+    return fetchPage(null);
+  }
+
+  function notionCreate(dsId, properties) {
+    return window.claude.mcp.callTool(NOTION_SERVER, "notion-create-pages", {
+      parent: { type: "data_source_id", data_source_id: dsId },
+      pages: [{ properties: properties }]
+    });
+  }
+  function notionUpdate(pageId, properties) {
+    if (!pageId) return Promise.resolve();
+    return window.claude.mcp.callTool(NOTION_SERVER, "notion-update-page", {
+      page_id: pageId,
+      command: "update_properties",
+      properties: properties
+    });
+  }
+  function notionSoftDelete(pageId) {
+    return notionUpdate(pageId, { "削除済み": "__YES__" });
+  }
+
+  function loadNotionList(view, rowToItem) {
+    return queryAllViewRows(view).then(function (rows) {
+      return rows.filter(function (r) { return r["削除済み"] !== "__YES__"; }).map(rowToItem);
+    });
+  }
+
+  // ---------- App state ----------
+  var state = { exercises: [], logs: [] };
+  var nextTempId = 1;
+  var currentSets = [];
+
+  function makeTempItem(base) {
+    base.id = "temp-" + (nextTempId++);
+    base.notionId = null;
+    return base;
+  }
+
+  function removeItem(listKey, item, label) {
+    state[listKey] = state[listKey].filter(function (x) { return x.id !== item.id; });
+    renderAll();
+    if (!NOTION_ENABLED) return;
+    notionSoftDelete(item.notionId).catch(function (err) {
+      setSyncStatus(syncErrorMessage(label + "の削除", err), true);
+    });
+  }
+
+  function addAndSync(listKey, item, dsId, props, label) {
+    state[listKey].push(item);
+    renderAll();
+    if (!NOTION_ENABLED) return;
+    notionCreate(dsId, props).then(function (res) {
+      var created = res.payload && res.payload.pages && res.payload.pages[0];
+      if (created && created.id) { item.id = created.id; item.notionId = created.id; }
+    }).catch(function (err) {
+      setSyncStatus(syncErrorMessage(label + "の追加", err), true);
+    });
+  }
+
+  // ---------- Exercises master ----------
+  function exerciseRowToItem(row) {
+    var pageId = extractPageId(row.url);
+    return { id: pageId, notionId: pageId, name: row["種目名"] || "", category: row["部位"] || CATEGORY_OPTIONS[0] };
+  }
+  function loadExercises() {
+    return loadNotionList(DS.exercises.view, exerciseRowToItem);
+  }
+
+  // ---------- Logs ----------
+  function logRowToItem(row) {
+    var pageId = extractPageId(row.url);
+    return {
+      id: pageId, notionId: pageId,
+      date: row["date:日付:start"] || "",
+      exerciseName: row["種目名"] || "",
+      sets: decodeSets(row["セット詳細"]),
+      note: row["メモ"] || ""
+    };
+  }
+  function logToProps(l) {
+    return {
+      "種目名": l.exerciseName,
+      "date:日付:start": l.date,
+      "セット詳細": encodeSets(l.sets),
+      "メモ": l.note || ""
+    };
+  }
+  function loadLogs() {
+    return loadNotionList(DS.logs.view, logRowToItem);
+  }
+
+  // ---------- Render: exercise master ----------
+  function seedCategorySelect() {
+    var select = document.getElementById("exerciseCategory");
+    CATEGORY_OPTIONS.forEach(function (c) {
+      var opt = document.createElement("option"); opt.value = c; opt.textContent = c;
+      select.appendChild(opt);
+    });
+  }
+
+  function renderExerciseMasterList() {
+    var list = document.getElementById("exerciseMasterList");
+    list.innerHTML = "";
+    if (!state.exercises.length) {
+      var empty = document.createElement("span");
+      empty.className = "hint"; empty.style.margin = "0";
+      empty.textContent = "まだ種目が登録されていません";
+      list.appendChild(empty);
+      return;
+    }
+    state.exercises.forEach(function (ex) {
+      var chip = document.createElement("div");
+      chip.className = "chip";
+      chip.style.borderLeftColor = CATEGORY_COLORS[ex.category] || "var(--muted)";
+      var label = document.createElement("span");
+      label.textContent = ex.name + "(" + ex.category + ")";
+      var rm = document.createElement("button");
+      rm.type = "button"; rm.className = "rm"; rm.textContent = "✕";
+      rm.addEventListener("click", function () {
+        removeItem("exercises", ex, "種目");
+      });
+      chip.appendChild(label); chip.appendChild(rm);
+      list.appendChild(chip);
+    });
+  }
+
+  function renderExerciseDatalist() {
+    var dl = document.getElementById("exerciseDatalist");
+    dl.innerHTML = "";
+    state.exercises.forEach(function (ex) {
+      var opt = document.createElement("option");
+      opt.value = ex.name;
+      dl.appendChild(opt);
+    });
+  }
+
+  // ---------- Render: add-log set rows ----------
+  function renderSetRows() {
+    var wrap = document.getElementById("setRows");
+    wrap.innerHTML = "";
+    currentSets.forEach(function (s, idx) {
+      var row = document.createElement("div");
+      row.className = "set-row";
+
+      var idxLabel = document.createElement("span");
+      idxLabel.className = "set-index";
+      idxLabel.textContent = (idx + 1) + ".";
+
+      var repsInput = document.createElement("input");
+      repsInput.type = "number"; repsInput.placeholder = "回数";
+      repsInput.value = s.reps != null ? s.reps : "";
+      repsInput.addEventListener("change", function () {
+        s.reps = repsInput.value === "" ? null : parseInt(repsInput.value, 10);
+      });
+
+      var repsUnit = document.createElement("span");
+      repsUnit.className = "unit"; repsUnit.textContent = "回 ×";
+
+      var weightInput = document.createElement("input");
+      weightInput.type = "number"; weightInput.placeholder = "自重なら空欄";
+      weightInput.step = "0.5";
+      weightInput.value = s.weight != null ? s.weight : "";
+      weightInput.addEventListener("change", function () {
+        weightInput.value === "" ? (s.weight = null) : (s.weight = parseFloat(weightInput.value));
+      });
+
+      var weightUnit = document.createElement("span");
+      weightUnit.className = "unit"; weightUnit.textContent = "kg";
+
+      var rm = document.createElement("button");
+      rm.type = "button"; rm.className = "rm-btn"; rm.textContent = "削除";
+      rm.addEventListener("click", function () {
+        currentSets.splice(idx, 1);
+        renderSetRows();
+      });
+
+      row.appendChild(idxLabel); row.appendChild(repsInput); row.appendChild(repsUnit);
+      row.appendChild(weightInput); row.appendChild(weightUnit); row.appendChild(rm);
+      wrap.appendChild(row);
+    });
+  }
+
+  // ---------- Render: log list ----------
+  function formatDateHeading(dateStr) {
+    if (!dateStr) return "日付未設定";
+    var d = new Date(dateStr + "T00:00:00");
+    if (isNaN(d.getTime())) return dateStr;
+    var weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+    return dateStr + "(" + weekdays[d.getDay()] + ")";
+  }
+
+  function logVolume(l) {
+    return (l.sets || []).reduce(function (sum, s) {
+      return sum + (s.weight != null ? s.reps * s.weight : 0);
+    }, 0);
+  }
+
+  function renderLogGroups() {
+    var wrap = document.getElementById("logGroups");
+    wrap.innerHTML = "";
+    document.getElementById("logEmpty").style.display = state.logs.length ? "none" : "block";
+    if (!state.logs.length) return;
+
+    var byDate = {};
+    state.logs.forEach(function (l) {
+      var key = l.date || "";
+      if (!byDate[key]) byDate[key] = [];
+      byDate[key].push(l);
+    });
+    var dates = Object.keys(byDate).sort().reverse();
+
+    dates.forEach(function (dateStr) {
+      var group = document.createElement("div");
+      group.className = "date-group";
+
+      var heading = document.createElement("div");
+      heading.className = "date-heading";
+      heading.textContent = formatDateHeading(dateStr);
+      group.appendChild(heading);
+
+      byDate[dateStr].forEach(function (l) {
+        var card = document.createElement("div");
+        card.className = "log-card";
+
+        var head = document.createElement("div");
+        head.className = "log-card-head";
+        var name = document.createElement("span");
+        name.className = "ex-name"; name.textContent = l.exerciseName;
+        var rm = document.createElement("button");
+        rm.type = "button"; rm.className = "rm-btn"; rm.textContent = "削除";
+        rm.addEventListener("click", function () {
+          removeItem("logs", l, "記録");
+        });
+        head.appendChild(name); head.appendChild(rm);
+        card.appendChild(head);
+
+        var summary = document.createElement("div");
+        summary.className = "set-summary";
+        (l.sets || []).forEach(function (s) {
+          var pill = document.createElement("span");
+          pill.className = "set-pill";
+          pill.textContent = s.reps + "回" + (s.weight != null ? " × " + s.weight + "kg" : "(自重)");
+          summary.appendChild(pill);
+        });
+        card.appendChild(summary);
+
+        var vol = logVolume(l);
+        if (vol > 0) {
+          var volEl = document.createElement("div");
+          volEl.className = "volume";
+          volEl.textContent = "総重量(回数×重量の合計): " + vol.toLocaleString("ja-JP") + "kg";
+          card.appendChild(volEl);
+        }
+
+        if (l.note) {
+          var noteEl = document.createElement("div");
+          noteEl.className = "log-note";
+          noteEl.textContent = l.note;
+          card.appendChild(noteEl);
+        }
+
+        group.appendChild(card);
+      });
+
+      wrap.appendChild(group);
+    });
+  }
+
+  function renderAll() {
+    renderExerciseMasterList();
+    renderExerciseDatalist();
+    renderLogGroups();
+  }
+
+  // ---------- Init ----------
+  function todayStr() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function resetLogForm() {
+    document.getElementById("logExercise").value = "";
+    document.getElementById("logNote").value = "";
+    currentSets = [{ reps: null, weight: null }];
+    renderSetRows();
+  }
+
+  function init() {
+    seedCategorySelect();
+    document.getElementById("logDate").value = todayStr();
+    currentSets = [{ reps: null, weight: null }];
+    renderSetRows();
+
+    document.getElementById("addExerciseBtn").addEventListener("click", function () {
+      var input = document.getElementById("exerciseInput");
+      var name = input.value.trim();
+      var category = document.getElementById("exerciseCategory").value;
+      if (!name || state.exercises.some(function (e) { return e.name === name; })) return;
+      var ex = makeTempItem({ name: name, category: category });
+      input.value = "";
+      addAndSync("exercises", ex, DS.exercises.id, { "種目名": name, "部位": category }, "種目");
+    });
+
+    document.getElementById("addSetRowBtn").addEventListener("click", function () {
+      currentSets.push({ reps: null, weight: null });
+      renderSetRows();
+    });
+
+    document.getElementById("saveLogBtn").addEventListener("click", function () {
+      var date = document.getElementById("logDate").value || todayStr();
+      var exerciseName = document.getElementById("logExercise").value.trim();
+      var note = document.getElementById("logNote").value.trim();
+      var sets = currentSets.filter(function (s) { return s.reps != null && s.reps > 0; });
+      if (!exerciseName || !sets.length) return;
+
+      var l = makeTempItem({ date: date, exerciseName: exerciseName, sets: sets, note: note });
+      resetLogForm();
+      addAndSync("logs", l, DS.logs.id, logToProps(l), "記録");
+    });
+
+    if (NOTION_ENABLED) {
+      setSyncStatus("Notionから読み込んでいます…");
+      Promise.all([loadExercises(), loadLogs()]).then(function (results) {
+        state.exercises = results[0];
+        state.logs = results[1];
+        renderAll();
+        setSyncStatus("Notionと同期中(他の端末からも同じデータが見えます)");
+      }).catch(function (err) {
+        setSyncStatus("Notionからの読み込みに失敗しました(" + (err && err.code) + ")。ページを再読み込みしてください。", true);
+        renderAll();
+      });
+    } else {
+      setSyncStatus("ローカルモードです(このページを閉じるとデータは消えます)");
+      renderAll();
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+})();
+</script>
+</body>
+</html>
