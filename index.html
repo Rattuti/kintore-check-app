@@ -413,6 +413,108 @@
   "use strict";
 
   // ---------- Notion sync ----------
+  // ---------- Notion bridge shim ----------
+  // window.claude.mcp が存在しない環境(Artifactではなくローカルファイル等として
+  // 開かれた場合)でのみ、Cloudflare Worker(notion-bridge)経由でNotion側の
+  // データを読み書きする互換シムを定義する。window.claude.mcp.callTool(server,
+  // tool, input) と同じ形を再現し、アプリ本体のコードからは区別なく呼べるようにする。
+  if (!(window.claude && window.claude.mcp)) {
+    (function () {
+      var BRIDGE_BASE = "https://notion-bridge.rattuti.workers.dev";
+      var APP_KEY_STORAGE = "notion_bridge_key";
+      // ビューURL→DB IDの対応は、下で定義するDS(データソース定義)から都度引く。
+      // callToolは非同期に呼ばれるため、この時点でDSがまだ未代入でも問題ない。
+      function dataSourceIdForView(viewUrl) {
+        var keys = Object.keys(DS);
+        for (var i = 0; i < keys.length; i++) {
+          if (DS[keys[i]].view === viewUrl) return DS[keys[i]].id;
+        }
+        return null;
+      }
+
+      // notion-query-database-view/notion-create-pagesで取得・作成した各ページIDが
+      // どのデータソース(DB)に属するかを控えておく。notion-update-pageはpage_idしか
+      // 受け取らないため、更新時にこの対応表からdataSourceIdを引く。
+      // Workerが返すIDはハイフン付きだが、アプリ側はextractPageId()でハイフンなしの
+      // 32桁hexに変換した値をnotionIdとして保持するため、キーは常にハイフンを
+      // 除去して正規化してから読み書きする。
+      var pageDataSourceMap = {};
+      function normalizeId(id) {
+        return (id || "").replace(/-/g, "");
+      }
+
+      function getAppKey() {
+        var key = localStorage.getItem(APP_KEY_STORAGE);
+        if (!key) {
+          key = window.prompt("Notion連携用のアプリキーを入力してください");
+          if (key) localStorage.setItem(APP_KEY_STORAGE, key);
+        }
+        return key;
+      }
+
+      function bridgeFetch(path, body) {
+        var key = getAppKey();
+        return fetch(BRIDGE_BASE + path, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-App-Key": key || "" },
+          body: JSON.stringify(body)
+        }).then(function (res) {
+          if (res.status === 401) {
+            localStorage.removeItem(APP_KEY_STORAGE);
+            return Promise.reject({ code: "unauthorized", message: "アプリキーが正しくありません" });
+          }
+          if (!res.ok) {
+            return Promise.reject({ code: "http_" + res.status, message: "Notion連携サーバーへの通信に失敗しました" });
+          }
+          return res.json();
+        });
+      }
+
+      // bridgeFetchはWorkerの生レスポンス({results,...}や{pages:[...]}等)を
+      // そのまま返す。window.claude.mcp.callToolの実際の戻り値は{payload: ...}
+      // で包まれた形のため、ここで同じ形に包み直してからアプリ本体に返す。
+      function callTool(server, tool, input) {
+        if (tool === "notion-query-database-view") {
+          var queryDataSourceId = dataSourceIdForView(input.view_url);
+          var queryBody = { dataSourceId: queryDataSourceId, page_size: input.page_size };
+          if (input.start_cursor) queryBody.start_cursor = input.start_cursor;
+          return bridgeFetch("/query", queryBody).then(function (raw) {
+            var results = raw.results || [];
+            results.forEach(function (row) {
+              if (row && row.id) pageDataSourceMap[normalizeId(row.id)] = queryDataSourceId;
+            });
+            return { payload: raw };
+          });
+        }
+        if (tool === "notion-create-pages") {
+          var createDataSourceId = input.parent && input.parent.data_source_id;
+          var page = input.pages && input.pages[0];
+          return bridgeFetch("/create", {
+            dataSourceId: createDataSourceId,
+            properties: page && page.properties
+          }).then(function (raw) {
+            var created = raw.pages && raw.pages[0];
+            if (created && created.id) pageDataSourceMap[normalizeId(created.id)] = createDataSourceId;
+            return { payload: raw };
+          });
+        }
+        if (tool === "notion-update-page") {
+          return bridgeFetch("/update", {
+            pageId: input.page_id,
+            dataSourceId: pageDataSourceMap[normalizeId(input.page_id)],
+            properties: input.properties
+          }).then(function (raw) {
+            return { payload: raw };
+          });
+        }
+        return Promise.reject({ code: "unsupported_tool", message: "未対応のツールです: " + tool });
+      }
+
+      window.claude = window.claude || {};
+      window.claude.mcp = { callTool: callTool };
+    })();
+  }
+
   var NOTION_ENABLED = !!(window.claude && window.claude.mcp);
   var NOTION_SERVER = "Notion";
   var DS = {
