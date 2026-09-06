@@ -380,6 +380,7 @@
       <label>部位<select id="exerciseCategory"></select></label>
     </div>
     <button type="button" class="secondary" id="addExerciseBtn">種目を追加</button>
+    <p class="hint" id="exerciseFormHint"></p>
   </div>
 
   <div class="panel">
@@ -399,6 +400,7 @@
       <label>メモ(任意)<input type="text" id="logNote" placeholder="任意"></label>
     </div>
     <button type="button" id="saveLogBtn">記録を保存</button>
+    <p class="hint" id="logFormHint"></p>
   </div>
 
   <div class="panel">
@@ -444,10 +446,13 @@
       }
 
       function getAppKey() {
-        var key = localStorage.getItem(APP_KEY_STORAGE);
+        var key = null;
+        try { key = localStorage.getItem(APP_KEY_STORAGE); } catch (e) { key = null; }
         if (!key) {
           key = window.prompt("Notion連携用のアプリキーを入力してください");
-          if (key) localStorage.setItem(APP_KEY_STORAGE, key);
+          if (key) {
+            try { localStorage.setItem(APP_KEY_STORAGE, key); } catch (e) { /* 保存できなくても続行 */ }
+          }
         }
         return key;
       }
@@ -460,7 +465,7 @@
           body: JSON.stringify(body)
         }).then(function (res) {
           if (res.status === 401) {
-            localStorage.removeItem(APP_KEY_STORAGE);
+            try { localStorage.removeItem(APP_KEY_STORAGE); } catch (e) { /* 削除できなくても続行 */ }
             return Promise.reject({ code: "unauthorized", message: "アプリキーが正しくありません" });
           }
           if (!res.ok) {
@@ -850,7 +855,13 @@
 
   // ---------- Init ----------
   function todayStr() {
-    return new Date().toISOString().slice(0, 10);
+    // Date#toISOString()はUTC基準のため、JST等UTCより進んだタイムゾーンでは
+    // 深夜0時台〜朝にかけて前日の日付になってしまう不具合があった。
+    // ローカルの年月日をそのまま組み立てることで回避する。
+    var d = new Date();
+    var mm = String(d.getMonth() + 1).padStart(2, "0");
+    var dd = String(d.getDate()).padStart(2, "0");
+    return d.getFullYear() + "-" + mm + "-" + dd;
   }
 
   function resetLogForm() {
@@ -868,9 +879,15 @@
 
     document.getElementById("addExerciseBtn").addEventListener("click", function () {
       var input = document.getElementById("exerciseInput");
+      var hint = document.getElementById("exerciseFormHint");
       var name = input.value.trim();
       var category = document.getElementById("exerciseCategory").value;
-      if (!name || state.exercises.some(function (e) { return e.name === name; })) return;
+      if (!name) { hint.textContent = "種目名を入力してください"; return; }
+      if (state.exercises.some(function (e) { return e.name === name; })) {
+        hint.textContent = "「" + name + "」は既に登録されています";
+        return;
+      }
+      hint.textContent = "";
       var ex = makeTempItem({ name: name, category: category });
       input.value = "";
       addAndSync("exercises", ex, DS.exercises.id, { "種目名": name, "部位": category }, "種目");
@@ -882,11 +899,14 @@
     });
 
     document.getElementById("saveLogBtn").addEventListener("click", function () {
+      var hint = document.getElementById("logFormHint");
       var date = document.getElementById("logDate").value || todayStr();
       var exerciseName = document.getElementById("logExercise").value.trim();
       var note = document.getElementById("logNote").value.trim();
       var sets = currentSets.filter(function (s) { return s.reps != null && s.reps > 0; });
-      if (!exerciseName || !sets.length) return;
+      if (!exerciseName) { hint.textContent = "種目名を入力してください"; return; }
+      if (!sets.length) { hint.textContent = "回数を入力したセットが1つ以上必要です"; return; }
+      hint.textContent = "";
 
       var l = makeTempItem({ date: date, exerciseName: exerciseName, sets: sets, note: note });
       resetLogForm();
