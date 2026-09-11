@@ -58,6 +58,13 @@
   .form-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; color: var(--muted); }
   .form-grid select, .form-grid input { width: 100%; }
 
+  .tips-group-heading {
+    font-size: 0.78rem; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.04em;
+    margin: 18px 0 8px; padding-top: 12px; border-top: 1px solid var(--border);
+  }
+  .tips-group-heading:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+
   .tips-category {
     border: 1px solid var(--border); border-radius: 8px;
     padding: 10px 14px; margin-bottom: 8px; background: var(--bg);
@@ -125,6 +132,8 @@
   <div class="panel">
     <h2>豆知識(パレオな男まとめ)</h2>
     <p class="desc">「パレオな男」を参考に整理した学習メモです。項目をクリックすると展開します。記録の判定などには使われず、読み物としてこのページに置いているだけです。効果には個人差があります。</p>
+
+    <div class="tips-group-heading">基礎知識(休憩・負荷・サプリ・食事など)</div>
 
     <details class="tips-category">
       <summary>筋トレや運動の休憩</summary>
@@ -279,6 +288,8 @@
       </ul>
     </details>
 
+    <div class="tips-group-heading">部位別おすすめ種目</div>
+
     <details class="tips-category">
       <summary>背筋</summary>
       <ul class="tips-list">
@@ -353,6 +364,8 @@
         <li>外腹斜筋(脇腹): ①デクライン・ベンチ・カールアップ ②キャプテン・チェア・クランチ ③ボートポーズ</li>
       </ul>
     </details>
+
+    <div class="tips-group-heading">種目別フォーム解説</div>
 
     <details class="tips-category">
       <summary>腕立て伏せ</summary>
