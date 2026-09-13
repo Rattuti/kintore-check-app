@@ -126,7 +126,7 @@
   <div>
     <h1>筋トレチェック</h1>
     <p class="subtitle">種目ごとにセット・回数・重量を記録します。</p>
-    <p class="hint" id="syncStatus" style="margin-top:0;"></p>
+    <p class="hint" id="syncStatus" style="margin-top:0;" aria-live="polite"></p>
   </div>
 
   <div class="panel">
@@ -393,7 +393,7 @@
       <label>部位<select id="exerciseCategory"></select></label>
     </div>
     <button type="button" class="secondary" id="addExerciseBtn">種目を追加</button>
-    <p class="hint" id="exerciseFormHint"></p>
+    <p class="hint" id="exerciseFormHint" aria-live="polite"></p>
   </div>
 
   <div class="panel">
@@ -413,7 +413,7 @@
       <label>メモ(任意)<input type="text" id="logNote" placeholder="任意"></label>
     </div>
     <button type="button" id="saveLogBtn">記録を保存</button>
-    <p class="hint" id="logFormHint"></p>
+    <p class="hint" id="logFormHint" aria-live="polite"></p>
   </div>
 
   <div class="panel">
@@ -623,6 +623,10 @@
   var state = { exercises: [], logs: [] };
   var nextTempId = 1;
   var currentSets = [];
+  // Notion同期を使わないローカルモードでは最初から「読み込み完了」扱いにする。
+  // 同期する場合は初回読み込み(成功/失敗いずれか)が終わるまでfalseのままにし、
+  // その間は一覧の空表示が「まだ記録がありません」ではなく「読み込み中…」になるようにする。
+  var notionLoaded = !NOTION_ENABLED;
 
   function makeTempItem(base) {
     base.id = "temp-" + (nextTempId++);
@@ -698,7 +702,7 @@
     if (!state.exercises.length) {
       var empty = document.createElement("span");
       empty.className = "hint"; empty.style.margin = "0";
-      empty.textContent = "まだ種目が登録されていません";
+      empty.textContent = notionLoaded ? "まだ種目が登録されていません" : "読み込み中…";
       list.appendChild(empty);
       return;
     }
@@ -710,6 +714,7 @@
       label.textContent = ex.name + "(" + ex.category + ")";
       var rm = document.createElement("button");
       rm.type = "button"; rm.className = "rm"; rm.textContent = "✕";
+      rm.setAttribute("aria-label", ex.name + "を削除");
       rm.addEventListener("click", function () {
         removeItem("exercises", ex, "種目");
       });
@@ -742,6 +747,7 @@
 
       var repsInput = document.createElement("input");
       repsInput.type = "number"; repsInput.placeholder = "回数";
+      repsInput.setAttribute("aria-label", (idx + 1) + "セット目の回数");
       repsInput.value = s.reps != null ? s.reps : "";
       repsInput.addEventListener("change", function () {
         s.reps = repsInput.value === "" ? null : parseInt(repsInput.value, 10);
@@ -753,6 +759,7 @@
       var weightInput = document.createElement("input");
       weightInput.type = "number"; weightInput.placeholder = "自重なら空欄";
       weightInput.step = "0.5";
+      weightInput.setAttribute("aria-label", (idx + 1) + "セット目の重量(kg、自重なら空欄)");
       weightInput.value = s.weight != null ? s.weight : "";
       weightInput.addEventListener("change", function () {
         weightInput.value === "" ? (s.weight = null) : (s.weight = parseFloat(weightInput.value));
@@ -763,6 +770,7 @@
 
       var rm = document.createElement("button");
       rm.type = "button"; rm.className = "rm-btn"; rm.textContent = "削除";
+      rm.setAttribute("aria-label", (idx + 1) + "セット目を削除");
       rm.addEventListener("click", function () {
         currentSets.splice(idx, 1);
         renderSetRows();
@@ -792,7 +800,9 @@
   function renderLogGroups() {
     var wrap = document.getElementById("logGroups");
     wrap.innerHTML = "";
-    document.getElementById("logEmpty").style.display = state.logs.length ? "none" : "block";
+    var logEmpty = document.getElementById("logEmpty");
+    logEmpty.style.display = state.logs.length ? "none" : "block";
+    logEmpty.textContent = notionLoaded ? "まだ記録がありません" : "読み込み中…";
     if (!state.logs.length) return;
 
     var byDate = {};
@@ -822,6 +832,7 @@
         name.className = "ex-name"; name.textContent = l.exerciseName;
         var rm = document.createElement("button");
         rm.type = "button"; rm.className = "rm-btn"; rm.textContent = "削除";
+        rm.setAttribute("aria-label", l.exerciseName + "(" + (l.date || "日付未設定") + ")の記録を削除");
         rm.addEventListener("click", function () {
           removeItem("logs", l, "記録");
         });
@@ -931,9 +942,11 @@
       Promise.all([loadExercises(), loadLogs()]).then(function (results) {
         state.exercises = results[0];
         state.logs = results[1];
+        notionLoaded = true;
         renderAll();
         setSyncStatus("Notionと同期中(他の端末からも同じデータが見えます)");
       }).catch(function (err) {
+        notionLoaded = true;
         setSyncStatus("Notionからの読み込みに失敗しました(" + (err && err.code) + ")。ページを再読み込みしてください。", true);
         renderAll();
       });
