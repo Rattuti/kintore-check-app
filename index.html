@@ -13,7 +13,6 @@
     --muted: #7a7167;
     --accent: #c1502e;
     --accent-dark: #9c3f22;
-    --clear: #4f8f6a;
     --miss: #b3546b;
   }
   * { box-sizing: border-box; }
@@ -716,6 +715,7 @@
       rm.type = "button"; rm.className = "rm"; rm.textContent = "✕";
       rm.setAttribute("aria-label", ex.name + "を削除");
       rm.addEventListener("click", function () {
+        if (!window.confirm("「" + ex.name + "」を削除しますか?")) return;
         removeItem("exercises", ex, "種目");
       });
       chip.appendChild(label); chip.appendChild(rm);
@@ -834,6 +834,7 @@
         rm.type = "button"; rm.className = "rm-btn"; rm.textContent = "削除";
         rm.setAttribute("aria-label", l.exerciseName + "(" + (l.date || "日付未設定") + ")の記録を削除");
         rm.addEventListener("click", function () {
+          if (!window.confirm("「" + l.exerciseName + "」の記録を削除しますか?")) return;
           removeItem("logs", l, "記録");
         });
         head.appendChild(name); head.appendChild(rm);
@@ -911,7 +912,7 @@
         hint.textContent = "「" + name + "」は既に登録されています";
         return;
       }
-      hint.textContent = "";
+      hint.textContent = "「" + name + "」を追加しました";
       var ex = makeTempItem({ name: name, category: category });
       input.value = "";
       addAndSync("exercises", ex, DS.exercises.id, { "種目名": name, "部位": category }, "種目");
@@ -930,10 +931,10 @@
       var sets = currentSets.filter(function (s) { return s.reps != null && s.reps > 0; });
       if (!exerciseName) { hint.textContent = "種目名を入力してください"; return; }
       if (!sets.length) { hint.textContent = "回数を入力したセットが1つ以上必要です"; return; }
-      hint.textContent = "";
 
       var l = makeTempItem({ date: date, exerciseName: exerciseName, sets: sets, note: note });
       resetLogForm();
+      hint.textContent = "「" + exerciseName + "」の記録を保存しました";
       addAndSync("logs", l, DS.logs.id, logToProps(l), "記録");
     });
 
