@@ -113,6 +113,9 @@
   .volume { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
   .log-note { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
 
+  html { scroll-behavior: smooth; }
+  .body-diagram-wrap a { text-decoration: none; color: inherit; }
+  .body-diagram-wrap a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .body-diagram-wrap {
     display: flex; gap: 18px; justify-content: center; flex-wrap: wrap;
     margin-bottom: 14px; padding: 12px; background: var(--bg);
@@ -311,14 +314,14 @@
         <svg viewBox="0 0 140 300" aria-hidden="true">
           <circle class="bd-base" cx="70" cy="26" r="20"></circle>
           <rect class="bd-base" x="62" y="44" width="16" height="12"></rect>
-          <rect class="bd-region" data-tip="胸" x="42" y="56" width="56" height="46" rx="12" fill="#c1502e"><title>胸のトレーニングを見る</title></rect>
-          <rect class="bd-region" data-tip="腹筋" x="48" y="100" width="44" height="52" rx="10" fill="#b3546b"><title>腹筋のトレーニングを見る</title></rect>
-          <ellipse class="bd-region" data-tip="肩" cx="34" cy="64" rx="15" ry="13" fill="#c99a3f"><title>肩のトレーニングを見る</title></ellipse>
-          <ellipse class="bd-region" data-tip="肩" cx="106" cy="64" rx="15" ry="13" fill="#c99a3f"><title>肩のトレーニングを見る</title></ellipse>
-          <rect class="bd-region" data-tip="腕" x="14" y="74" width="18" height="108" rx="9" fill="#8a5fbf"><title>腕のトレーニングを見る</title></rect>
-          <rect class="bd-region" data-tip="腕" x="108" y="74" width="18" height="108" rx="9" fill="#8a5fbf"><title>腕のトレーニングを見る</title></rect>
-          <rect class="bd-region" data-tip="足" x="44" y="152" width="22" height="140" rx="10" fill="#4f8f6a"><title>足のトレーニングを見る</title></rect>
-          <rect class="bd-region" data-tip="足" x="74" y="152" width="22" height="140" rx="10" fill="#4f8f6a"><title>足のトレーニングを見る</title></rect>
+          <a href="#tip-胸"><rect class="bd-region" x="42" y="56" width="56" height="46" rx="12" fill="#c1502e"><title>胸のトレーニングを見る</title></rect></a>
+          <a href="#tip-腹筋"><rect class="bd-region" x="48" y="100" width="44" height="52" rx="10" fill="#b3546b"><title>腹筋のトレーニングを見る</title></rect></a>
+          <a href="#tip-肩"><ellipse class="bd-region" cx="34" cy="64" rx="15" ry="13" fill="#c99a3f"><title>肩のトレーニングを見る</title></ellipse></a>
+          <a href="#tip-肩"><ellipse class="bd-region" cx="106" cy="64" rx="15" ry="13" fill="#c99a3f"><title>肩のトレーニングを見る</title></ellipse></a>
+          <a href="#tip-腕"><rect class="bd-region" x="14" y="74" width="18" height="108" rx="9" fill="#8a5fbf"><title>腕のトレーニングを見る</title></rect></a>
+          <a href="#tip-腕"><rect class="bd-region" x="108" y="74" width="18" height="108" rx="9" fill="#8a5fbf"><title>腕のトレーニングを見る</title></rect></a>
+          <a href="#tip-足"><rect class="bd-region" x="44" y="152" width="22" height="140" rx="10" fill="#4f8f6a"><title>足のトレーニングを見る</title></rect></a>
+          <a href="#tip-足"><rect class="bd-region" x="74" y="152" width="22" height="140" rx="10" fill="#4f8f6a"><title>足のトレーニングを見る</title></rect></a>
         </svg>
         <div class="body-diagram-label">前面</div>
       </div>
@@ -326,32 +329,32 @@
         <svg viewBox="0 0 140 300" aria-hidden="true">
           <circle class="bd-base" cx="70" cy="26" r="20"></circle>
           <rect class="bd-base" x="62" y="44" width="16" height="12"></rect>
-          <rect class="bd-region" data-tip="背筋" x="42" y="56" width="56" height="93" rx="12" fill="#3b6ea5"><title>背筋のトレーニングを見る</title></rect>
-          <ellipse class="bd-region" data-tip="肩" cx="34" cy="64" rx="15" ry="13" fill="#c99a3f"><title>肩のトレーニングを見る</title></ellipse>
-          <ellipse class="bd-region" data-tip="肩" cx="106" cy="64" rx="15" ry="13" fill="#c99a3f"><title>肩のトレーニングを見る</title></ellipse>
-          <rect class="bd-region" data-tip="腕" x="14" y="74" width="18" height="108" rx="9" fill="#8a5fbf"><title>腕のトレーニングを見る</title></rect>
-          <rect class="bd-region" data-tip="腕" x="108" y="74" width="18" height="108" rx="9" fill="#8a5fbf"><title>腕のトレーニングを見る</title></rect>
-          <rect class="bd-region" data-tip="尻" x="44" y="149" width="52" height="38" rx="16" fill="#a56b3f"><title>尻のトレーニングを見る</title></rect>
-          <rect class="bd-region" data-tip="足" x="44" y="187" width="22" height="105" rx="10" fill="#4f8f6a"><title>足のトレーニングを見る</title></rect>
-          <rect class="bd-region" data-tip="足" x="74" y="187" width="22" height="105" rx="10" fill="#4f8f6a"><title>足のトレーニングを見る</title></rect>
+          <a href="#tip-背筋"><rect class="bd-region" x="42" y="56" width="56" height="93" rx="12" fill="#3b6ea5"><title>背筋のトレーニングを見る</title></rect></a>
+          <a href="#tip-肩"><ellipse class="bd-region" cx="34" cy="64" rx="15" ry="13" fill="#c99a3f"><title>肩のトレーニングを見る</title></ellipse></a>
+          <a href="#tip-肩"><ellipse class="bd-region" cx="106" cy="64" rx="15" ry="13" fill="#c99a3f"><title>肩のトレーニングを見る</title></ellipse></a>
+          <a href="#tip-腕"><rect class="bd-region" x="14" y="74" width="18" height="108" rx="9" fill="#8a5fbf"><title>腕のトレーニングを見る</title></rect></a>
+          <a href="#tip-腕"><rect class="bd-region" x="108" y="74" width="18" height="108" rx="9" fill="#8a5fbf"><title>腕のトレーニングを見る</title></rect></a>
+          <a href="#tip-尻"><rect class="bd-region" x="44" y="149" width="52" height="38" rx="16" fill="#a56b3f"><title>尻のトレーニングを見る</title></rect></a>
+          <a href="#tip-足"><rect class="bd-region" x="44" y="187" width="22" height="105" rx="10" fill="#4f8f6a"><title>足のトレーニングを見る</title></rect></a>
+          <a href="#tip-足"><rect class="bd-region" x="74" y="187" width="22" height="105" rx="10" fill="#4f8f6a"><title>足のトレーニングを見る</title></rect></a>
         </svg>
         <div class="body-diagram-label">背面</div>
       </div>
       <div class="bd-legend">
-        <span class="bd-legend-item" data-tip="背筋"><span class="bd-swatch" style="background:#3b6ea5"></span>背筋</span>
-        <span class="bd-legend-item" data-tip="胸"><span class="bd-swatch" style="background:#c1502e"></span>胸</span>
-        <span class="bd-legend-item" data-tip="肩"><span class="bd-swatch" style="background:#c99a3f"></span>肩</span>
-        <span class="bd-legend-item" data-tip="腕"><span class="bd-swatch" style="background:#8a5fbf"></span>腕</span>
-        <span class="bd-legend-item" data-tip="尻"><span class="bd-swatch" style="background:#a56b3f"></span>尻</span>
-        <span class="bd-legend-item" data-tip="足"><span class="bd-swatch" style="background:#4f8f6a"></span>足</span>
-        <span class="bd-legend-item" data-tip="腹筋"><span class="bd-swatch" style="background:#b3546b"></span>腹筋</span>
+        <a class="bd-legend-item" href="#tip-背筋"><span class="bd-swatch" style="background:#3b6ea5"></span>背筋</a>
+        <a class="bd-legend-item" href="#tip-胸"><span class="bd-swatch" style="background:#c1502e"></span>胸</a>
+        <a class="bd-legend-item" href="#tip-肩"><span class="bd-swatch" style="background:#c99a3f"></span>肩</a>
+        <a class="bd-legend-item" href="#tip-腕"><span class="bd-swatch" style="background:#8a5fbf"></span>腕</a>
+        <a class="bd-legend-item" href="#tip-尻"><span class="bd-swatch" style="background:#a56b3f"></span>尻</a>
+        <a class="bd-legend-item" href="#tip-足"><span class="bd-swatch" style="background:#4f8f6a"></span>足</a>
+        <a class="bd-legend-item" href="#tip-腹筋"><span class="bd-swatch" style="background:#b3546b"></span>腹筋</a>
       </div>
       <p class="hint" style="width:100%; text-align:center; margin:0;">部位をタップすると、下のおすすめ種目が開きます</p>
     </div>
 
-    <details class="tips-category" id="tip-背筋">
+    <details class="tips-category">
       <summary>背筋</summary>
-      <ul class="tips-list">
+      <ul class="tips-list" id="tip-背筋">
         <li>中部僧帽筋
           <ul class="tips-list">
             <li>筋肥大が効率的に狙える筋トレ方法トップ3: ①ベントオーバーロウ ②IYTレイズ ③インバーテッドロウ
@@ -369,41 +372,41 @@
       </ul>
     </details>
 
-    <details class="tips-category" id="tip-胸">
+    <details class="tips-category">
       <summary>胸</summary>
-      <ul class="tips-list">
+      <ul class="tips-list" id="tip-胸">
         <li>筋肥大が効率的に狙える筋トレ方法トップ3: ①バーベルベンチプレス(平均EMG100) ②ペックデックマシン(平均EMG98) ③前傾ケーブルクロスオーバー</li>
       </ul>
     </details>
 
-    <details class="tips-category" id="tip-腕">
+    <details class="tips-category">
       <summary>腕</summary>
-      <ul class="tips-list">
+      <ul class="tips-list" id="tip-腕">
         <li>力こぶ: ①コンセントレーションカール ②ケーブルカール ③チンアップ</li>
         <li>二の腕(上腕三頭筋): ①トライアングルプッシュアップ ②キックバック ③ディップス ※ダンベル種目は1RMの70%負荷で行う</li>
       </ul>
     </details>
 
-    <details class="tips-category" id="tip-肩">
+    <details class="tips-category">
       <summary>肩</summary>
-      <ul class="tips-list">
+      <ul class="tips-list" id="tip-肩">
         <li>三角筋前部: ①ダンベルショルダープレス ②ダンベルフロントレイズ</li>
         <li>三角筋中部: ①45度インクラインロウ ②ベントアーム・ラテラルレイズ ③ケーブル・レイズ</li>
         <li>三角筋後部: ①シーテッド・リア・ラテラルレイズ ②45度インクラインロウ</li>
       </ul>
     </details>
 
-    <details class="tips-category" id="tip-尻">
+    <details class="tips-category">
       <summary>尻</summary>
-      <ul class="tips-list">
+      <ul class="tips-list" id="tip-尻">
         <li>大臀筋: ①クアッドプル・ヒップ・エクステンション ②フォーウェイ・ヒップ・エクステンション ③スクワット</li>
         <li>中臀筋: ①クアッドプル・ヒップ・エクステンション ②ステップアップ ③ランジ</li>
       </ul>
     </details>
 
-    <details class="tips-category" id="tip-足">
+    <details class="tips-category">
       <summary>足</summary>
-      <ul class="tips-list">
+      <ul class="tips-list" id="tip-足">
         <li>大腿二頭筋(ハムストリング・太ももの裏): ①ケトルベル・スイング ②プローン・レッグカール ③片足ルーマニアン・デッドリフト</li>
         <li>半腱様筋(太ももの内側): ①リバース・ヒップレイズ ②バランスボール・ハムストリング・カール ③グルートハム・レイズ</li>
         <li>大腿四頭筋(太ももの筋肉): ①スクワット(足は肩幅でヒザは90度曲げる) ②レッグ・エクステンション ③ハック・スクワット
@@ -415,9 +418,9 @@
       </ul>
     </details>
 
-    <details class="tips-category" id="tip-腹筋">
+    <details class="tips-category">
       <summary>腹筋</summary>
-      <ul class="tips-list">
+      <ul class="tips-list" id="tip-腹筋">
         <li>腹直筋上部(お腹の上): ①デクライン・ベンチ・カールアップ ②シットアップ ③バランスボール・クランチ ※普通にシットアップで良い</li>
         <li>腹直筋下部(お腹の下): ①デクライン・ベンチ・カールアップ ②バランスボール・クランチ ③キャプテン・チェア・クランチ ④ボートポーズ ⑤バイシクル・クランチ ※ベンチが使えるなら①が圧倒的に効果高い、自宅で器具がなければ④⑤</li>
         <li>外腹斜筋(脇腹): ①デクライン・ベンチ・カールアップ ②キャプテン・チェア・クランチ ③ボートポーズ</li>
@@ -957,14 +960,20 @@
   }
 
   function wireBodyDiagram() {
-    var targets = document.querySelectorAll("[data-tip]");
-    for (var i = 0; i < targets.length; i++) {
-      targets[i].addEventListener("click", function (e) {
-        var name = e.currentTarget.getAttribute("data-tip");
-        var el = document.getElementById("tip-" + name);
+    // 部位図・凡例は<a href="#tip-◯◯">のネイティブなページ内リンクとして動作する
+    // (JSが読み込めない/失敗した場合でもブラウザ標準の機能でジャンプ・開閉できるようにするため)。
+    // ここではJSが動く場合の見た目だけ、開閉とスクロールを滑らかにする上乗せ。
+    var links = document.querySelectorAll('.body-diagram-wrap a[href^="#tip-"]');
+    for (var i = 0; i < links.length; i++) {
+      links[i].addEventListener("click", function (e) {
+        var id = e.currentTarget.getAttribute("href").slice(1);
+        var el = document.getElementById(id);
         if (!el) return;
-        el.open = true;
+        e.preventDefault();
+        var details = el.closest("details");
+        if (details) details.open = true;
         el.scrollIntoView({ behavior: "smooth", block: "start" });
+        history.replaceState(null, "", "#" + id);
       });
     }
   }
