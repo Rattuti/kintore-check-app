@@ -330,7 +330,6 @@
       <p class="hint" style="width:100%; text-align:center; margin:4px 0 0;">部位をタップすると、下のおすすめ種目が開きます</p>
       <p class="hint" style="width:100%; text-align:center; margin:2px 0 0; font-size:0.7rem;">画像出典: <a href="https://commons.wikimedia.org/wiki/File:Muscles_front_and_back.svg" target="_blank" rel="noopener">OpenStax, Tomáš Kebert, umimeto.org(CC BY-SA 4.0)</a></p>
     </div>
-    </div>
 
     <details class="tips-category">
       <summary>背筋</summary>
@@ -790,6 +789,7 @@
 
       var repsInput = document.createElement("input");
       repsInput.type = "number"; repsInput.placeholder = "回数";
+      repsInput.min = "0";
       repsInput.setAttribute("aria-label", (idx + 1) + "セット目の回数");
       repsInput.value = s.reps != null ? s.reps : "";
       repsInput.addEventListener("change", function () {
@@ -802,6 +802,7 @@
       var weightInput = document.createElement("input");
       weightInput.type = "number"; weightInput.placeholder = "自重なら空欄";
       weightInput.step = "0.5";
+      weightInput.min = "0";
       weightInput.setAttribute("aria-label", (idx + 1) + "セット目の重量(kg、自重なら空欄)");
       weightInput.value = s.weight != null ? s.weight : "";
       weightInput.addEventListener("change", function () {
