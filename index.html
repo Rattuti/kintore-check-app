@@ -793,7 +793,9 @@
       repsInput.setAttribute("aria-label", (idx + 1) + "セット目の回数");
       repsInput.value = s.reps != null ? s.reps : "";
       repsInput.addEventListener("change", function () {
-        s.reps = repsInput.value === "" ? null : parseInt(repsInput.value, 10);
+        var v = repsInput.value === "" ? null : parseInt(repsInput.value, 10);
+        if (v != null && v < 0) { v = 0; repsInput.value = "0"; }
+        s.reps = v;
       });
 
       var repsUnit = document.createElement("span");
@@ -806,7 +808,10 @@
       weightInput.setAttribute("aria-label", (idx + 1) + "セット目の重量(kg、自重なら空欄)");
       weightInput.value = s.weight != null ? s.weight : "";
       weightInput.addEventListener("change", function () {
-        weightInput.value === "" ? (s.weight = null) : (s.weight = parseFloat(weightInput.value));
+        if (weightInput.value === "") { s.weight = null; return; }
+        var v = parseFloat(weightInput.value);
+        if (!isNaN(v) && v < 0) { v = 0; weightInput.value = "0"; }
+        s.weight = isNaN(v) ? null : v;
       });
 
       var weightUnit = document.createElement("span");
