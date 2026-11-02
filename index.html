@@ -76,6 +76,14 @@
   .tips-list li { margin-bottom: 6px; }
   .tips-list .tips-list { margin-top: 6px; font-size: 0.82rem; color: var(--muted); }
 
+  .ref-links { display: inline-flex; gap: 4px; margin: 0 4px; vertical-align: baseline; white-space: nowrap; }
+  .ref-links a {
+    padding: 1px 6px; border: 1px solid var(--border); border-radius: 4px;
+    font-size: 0.72rem; font-weight: 600; color: var(--accent-dark); text-decoration: none;
+  }
+  .ref-links a:hover { border-color: var(--accent); background: var(--bg); }
+  .ref-slot { display: block; margin: 8px 0 0; }
+
   .chip-list { display: flex; flex-wrap: wrap; gap: 6px; }
   .chip {
     display: inline-flex; align-items: center; gap: 6px;
@@ -410,6 +418,7 @@
 
     <details class="tips-category">
       <summary>腕立て伏せ</summary>
+      <span class="ref-slot" data-exercise="腕立て伏せ"></span>
       <ul class="tips-list">
         <li>肩甲骨はがし腕立て: 0.肩甲骨を動かし両手を真上に伸ばす/戻すを繰り返す 1.体を支えるのは小指側 2.胸と手は常に一直線上 3.正面から見て肘は45度方向に曲げる 4.横から見て肘は30度位だけ曲げる ※胸じゃなく脇に効いていればOK</li>
       </ul>
@@ -417,6 +426,7 @@
 
     <details class="tips-category">
       <summary>スクワット</summary>
+      <span class="ref-slot" data-exercise="スクワット"></span>
       <ul class="tips-list">
         <li>正しいフォームでスクワットを10回することで血行を正す(100回より10回のほうが効果が出る)</li>
         <li>手順: 1.足を肩幅ほどに開く 2.爪先は少し外側に向ける 3.息をゆっくり吸い始める 4.お尻を突き出すことで自然と腰を曲げる 5.膝が約90度に曲がったらキープする 6.息を吐きながら膝を軽く曲げた状態まで立ち戻る 7.3に戻る</li>
@@ -737,6 +747,51 @@
     });
   }
 
+  // ---------- Reference links ----------
+  // 個別の動画はリンク切れになるため、種目名の検索結果へのリンクにする(ユーザーが追加した種目にも使える)
+  function createRefLink(label, url, title) {
+    var a = document.createElement("a");
+    a.href = url; a.target = "_blank"; a.rel = "noopener noreferrer";
+    a.textContent = label; a.title = title;
+    return a;
+  }
+
+  function createRefLinks(name) {
+    var wrap = document.createElement("span");
+    wrap.className = "ref-links";
+    wrap.appendChild(createRefLink("動画", "https://www.youtube.com/results?search_query=" + encodeURIComponent(name + " 正しいフォーム やり方"), name + "の動画をYouTubeで探す"));
+    wrap.appendChild(createRefLink("解説", "https://www.google.com/search?q=" + encodeURIComponent(name + " やり方 フォーム"), name + "の解説をWebで探す"));
+    return wrap;
+  }
+
+  // 「①種目名 ②種目名」形式の本文から種目名を取り出し、名前の直後にリンクを差し込む
+  function addRefLinksToTips() {
+    var pattern = /[①②③④⑤]([^\s①②③④⑤(（※:、。ぁ-ん][^\s①②③④⑤(（※:、。]*)/g;
+    Array.prototype.forEach.call(document.querySelectorAll('[id^="tip-"]'), function (root) {
+      var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      var nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+      nodes.forEach(function (node) {
+        var text = node.nodeValue;
+        if (!/[①②③④⑤]/.test(text)) return;
+        var frag = document.createDocumentFragment();
+        var last = 0, m;
+        pattern.lastIndex = 0;
+        while ((m = pattern.exec(text))) {
+          var end = m.index + m[0].length;
+          frag.appendChild(document.createTextNode(text.slice(last, end)));
+          frag.appendChild(createRefLinks(m[1]));
+          last = end;
+        }
+        frag.appendChild(document.createTextNode(text.slice(last)));
+        node.parentNode.replaceChild(frag, node);
+      });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll(".ref-slot"), function (slot) {
+      slot.appendChild(createRefLinks(slot.getAttribute("data-exercise")));
+    });
+  }
+
   function renderExerciseMasterList() {
     var list = document.getElementById("exerciseMasterList");
     list.innerHTML = "";
@@ -760,7 +815,7 @@
         if (!window.confirm("「" + ex.name + "」を削除しますか?")) return;
         removeItem("exercises", ex, "種目");
       });
-      chip.appendChild(label); chip.appendChild(rm);
+      chip.appendChild(label); chip.appendChild(createRefLinks(ex.name)); chip.appendChild(rm);
       list.appendChild(chip);
     });
   }
@@ -886,7 +941,9 @@
           if (!window.confirm("「" + l.exerciseName + "」の記録を削除しますか?")) return;
           removeItem("logs", l, "記録");
         });
-        head.appendChild(name); head.appendChild(rm);
+        var titleWrap = document.createElement("span");
+        titleWrap.appendChild(name); titleWrap.appendChild(createRefLinks(l.exerciseName));
+        head.appendChild(titleWrap); head.appendChild(rm);
         card.appendChild(head);
 
         var summary = document.createElement("div");
@@ -967,6 +1024,7 @@
   function init() {
     seedCategorySelect();
     wireBodyDiagram();
+    addRefLinksToTips();
     document.getElementById("logDate").value = todayStr();
     currentSets = [{ reps: null, weight: null }];
     renderSetRows();
